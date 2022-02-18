@@ -1,3 +1,8 @@
+"""
+Call "pip install ." to initialize
+Call "pip install -e ." for local development, see also requirements.txt
+"""
+
 import setuptools
 
 setuptools.setup(
