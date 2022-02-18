@@ -1,0 +1,4 @@
+black==19.10b0
+isort==5.8.0
+mypy==0.901
+pylint==2.8.3
