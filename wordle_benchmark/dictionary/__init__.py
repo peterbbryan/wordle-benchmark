@@ -1,2 +1,2 @@
 # pylint: disable=missing-module-docstring
-from .wordle_dictionary import RemoteDictionary
+from .wordle_dictionary import Dictionary, RemoteDictionary

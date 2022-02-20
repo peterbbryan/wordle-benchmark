@@ -5,7 +5,7 @@ Logic to check that the Wordle dictionary representations work as expected.
 from wordle_benchmark.dictionary import RemoteDictionary
 
 
-def test_remote_dictionary():
+def test_remote_dictionary_connection():
     """
     Verify that remote dictionary downloads appropriately.
     """

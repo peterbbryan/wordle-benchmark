@@ -27,8 +27,8 @@ class Dictionary(ABC):
                 NOTE! The default value is None and will result in no shuffle!
         """
 
-        self._word_list = word_list
         self._word_len = word_len
+        self._word_list = word_list
 
         self._filtered_word_list = Dictionary._filter_by_len(word_list, word_len)
         self._randomized_order = Dictionary._randomize(self._filtered_word_list, seed)
@@ -37,7 +37,11 @@ class Dictionary(ABC):
         return self.word_list.__iter__()
 
     @property
-    def word_list(self):  # pylint: disable=missing-function-docstring
+    def word_len(self) -> int:  # pylint: disable=missing-function-docstring
+        return self._word_len
+
+    @property
+    def word_list(self) -> List[str]:  # pylint: disable=missing-function-docstring
         return self._randomized_order.copy()
 
     @staticmethod
