@@ -2,9 +2,14 @@
 Play game for a predefined word.
 """
 
+import logging
+
 import fire
 
 from wordle_benchmark.game import Game
+
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 def play_manual_games(word: str, max_guesses: int = 6) -> None:
@@ -18,7 +23,12 @@ def play_manual_games(word: str, max_guesses: int = 6) -> None:
 
     game = Game(word, max_guesses)
 
-    del game
+    session = game.start_game()
+    next(session)
+
+    while True:
+        session.send(input())
+        print("here")
 
 
 if __name__ == "__main__":
