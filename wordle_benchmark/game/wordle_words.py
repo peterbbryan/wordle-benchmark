@@ -6,6 +6,8 @@ from abc import ABC
 from enum import Enum, auto
 from typing import List, Tuple
 
+from wordle_benchmark.dictionary.wordle_dictionary import Dictionary
+
 
 class LetterState(Enum):
     """
@@ -45,18 +47,28 @@ class Word(ABC):
     def __str__(self) -> str:
         return self._word
 
+    def in_dictionary(self, dictionary: Dictionary) -> bool:
+        """
+        Check if a guess is in a dictionary.
+
+        Args:
+            dictionary: Dictionary to check membership in.
+        """
+
+        return self._word in dictionary
+
     def is_valid(self, word_len: int) -> bool:
         """
         Check if a guess is valid given board length constraint.
 
         Args:
-            word_len:
+            word_len: Length of word.
         """
 
         if not str(self).isalpha():
             return False
 
-        if len(self) == word_len:
+        if len(self) != word_len:
             return False
 
         return True

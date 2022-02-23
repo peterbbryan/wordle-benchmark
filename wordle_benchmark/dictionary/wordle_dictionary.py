@@ -33,6 +33,9 @@ class Dictionary(ABC):
         self._filtered_word_list = Dictionary._filter_by_len(word_list, word_len)
         self._randomized_order = Dictionary._randomize(self._filtered_word_list, seed)
 
+    def __contains__(self, value):
+        return self.word_list.__contains__(value)
+
     def __iter__(self):
         return self.word_list.__iter__()
 
@@ -149,4 +152,4 @@ class RemoteDictionary(Dictionary):  # pylint: disable=too-few-public-methods
 
         text = json.loads(requests.get(remote_source).text)
 
-        return [word for word in sorted(text.keys()) if word.isalpha()]
+        return [word.lower() for word in sorted(text.keys()) if word.isalpha()]

@@ -21,14 +21,13 @@ def play_manual_games(word: str, max_guesses: int = 6) -> None:
         max_guesses: max number guesses.
     """
 
-    game = Game(word, max_guesses)
+    game = Game(word, max_guesses=max_guesses)
 
     session = game.start_game()
     next(session)
 
     while True:
         session.send(input())
-        print("here")
 
 
 if __name__ == "__main__":
