@@ -8,7 +8,8 @@ import setuptools
 setuptools.setup(
     name="wordle-bechmark",
     version="1.0",
-    description="Python Distribution Utilities",
+    description="Wordle package to benchmark agents. The package is intended \
+        to support replicable heuristic evaluation of Wordle playing software.",
     author="Peter Bryan",
     author_email="peterbbryan@gmail.com",
     packages=setuptools.find_packages(),
