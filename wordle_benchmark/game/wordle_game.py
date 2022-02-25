@@ -18,13 +18,13 @@ log = logging.getLogger(__name__)
 
 
 DEFAULT_DICTIONARY = RemoteDictionary(
-    "https://raw.githubusercontent.com/matthewreagan/WebstersEnglishDictionary/master/dictionary.json",  # pylint: disable=line-too-long
+    "https://raw.githubusercontent.com/dwyl/english-words/master/words_dictionary.json",  # pylint: disable=line-too-long
     word_len=5,
     seed=42,
 )
 
 
-class GameStates(Enum):
+class GameState(Enum):
     """
     Enum of possible Wordle game states.
     """
@@ -32,6 +32,10 @@ class GameStates(Enum):
     UNSTARTED = auto()
     STARTED = auto()
     FINISHED = auto()
+
+
+class IllegalGuessError(Exception):
+    """ Guess is not the right length or is not a word """
 
 
 class GameManager:  # pylint: disable=too-few-public-methods
@@ -82,13 +86,13 @@ class Game:  # pylint: disable=too-many-instance-attributes
         self._yellows: List[Tuple[str, int]] = []
         self._blacks: List[str] = []
 
-        self._game_state = GameStates.UNSTARTED
+        self._game_state = GameState.UNSTARTED
 
     @property
     def possible_words(self) -> List[str]:
         """
         Returns:
-
+            Words that are still legal based on the dictionary.
         """
 
         possible_words = []
@@ -117,28 +121,29 @@ class Game:  # pylint: disable=too-many-instance-attributes
         State machine transition to started.
         """
 
-        assert self._game_state == GameStates.UNSTARTED
+        assert self._game_state == GameState.UNSTARTED
 
         log.info("Starting game...")
-        self._game_state = GameStates.STARTED
+        self._game_state = GameState.STARTED
 
     def _transition_to_finished(self):
         """
         State machine transition to finished.
         """
 
-        assert self._game_state == GameStates.STARTED
+        assert self._game_state == GameState.STARTED
 
         log.info("Ending game")
-        self._game_state = GameStates.FINISHED
+        self._game_state = GameState.FINISHED
 
     def _handle_match(self, match_state: MatchState, ind: int) -> None:
         """
-
+        Update knowledge of black, yellow, green letters after guess.
+        A match state represents a letter and it's black, yellow, green state.
 
         Args:
-            match_state:
-            ind:
+            match_state: Tuple[str, LetterState].
+            ind: Letter position in guess word.
         """
 
         character, letter_state = match_state
@@ -158,22 +163,23 @@ class Game:  # pylint: disable=too-many-instance-attributes
         else:
             raise ValueError("Unknown letter state")
 
-    def _register_guess(self, guess_word: GuessWord) -> None:
+    def _register_guess(self, guess_word: GuessWord) -> bool:
         """
         Register guess and update game state if necessary.
 
         Args:
             guess_word: Word guessed by user.
+        Raises:
+            IllegalGuessError in the event of an illegal word.
         """
 
         if not guess_word.is_valid(self._word_len):
-            log.warning(
-                "'%s' is not valid word of len %d", str(guess_word), self._word_len
+            raise IllegalGuessError(
+                f"{guess_word} is not valid word of len {self._word_len}"
             )
-            return
 
         if not guess_word.in_dictionary(self._dictionary):
-            log.warning("'%s' is not in the dictionary", str(guess_word))
+            raise IllegalGuessError(f"{guess_word} is not in the dictionary")
 
         # black, yellow, green match outcome given guess
         comparison: List[MatchState] = guess_word.compare_to(self._target_word)
@@ -182,23 +188,50 @@ class Game:  # pylint: disable=too-many-instance-attributes
         for ind, match in enumerate(comparison):
             self._handle_match(match, ind)
 
+        # if all characters matched, that's the end of the game
+        return all(letter_state == LetterState.GREEN for _, letter_state in comparison)
+
     def start_game(self) -> Generator[None, str, None]:
         """
         Initiate game, await user input.
         NOTE: should be refactored to async await.
+
+        Sample use of a manual game:
+            game = Game(word, max_guesses=max_guesses)
+            session = game.start_game()
+            next(session)
+
+            while True:
+                session.send(input())
+
+        Returns:
+            A generator. Use ".send()" to pass guesses.
         """
 
         self._transition_to_started()
 
         log.debug("The target word is %s", self._target_word)
 
-        while True:
+        while not self._game_state == GameState.FINISHED:
 
             log.info("Waiting for guess...")
             guess_word_str = yield
             log.info("Received guess %s", guess_word_str)
             guess_word = GuessWord(guess_word_str)
 
-            self._register_guess(guess_word)
+            try:
+                end_game: bool = self._register_guess(guess_word)
+            except IllegalGuessError as exception:
+                log.warning(exception)
+            else:
+                if end_game:
+                    self._transition_to_finished()
+                    log.info("Correct! The word was %s", self._target_word)
+                    break
 
-            log.debug("These remain possible: %s", self.possible_words)
+                log.debug("These remain possible: %s", self.possible_words)
+
+                if len(self._guesses) > self._max_guesses:
+                    self._transition_to_finished()
+                    log.info("Uh oh! You lose!")
+                    break
