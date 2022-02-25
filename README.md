@@ -1,6 +1,10 @@
 # wordle-benchmark
 A performant Wordle simulator for benchmarking and evaluating agents.
 
+Do you like Wordle? I like Wordle. 
+I wanted to see if I could my computer to play a decent game, but I couldn't find a good way to grade my agents.
+I put together a Python package to play Wordle games and keep track of game statistics.
+
 ![](https://media.githubusercontent.com/media/peterbbryan/wordle-benchmark/main/resources/docs/script-manual-game.gif)
 
 
