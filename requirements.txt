@@ -5,4 +5,4 @@ mypy==0.901
 pylint==2.8.3
 pytest==7.0.1
 requests==2.26.0
-wordfreq==0.2.5
+wordfreq==2.5.1
