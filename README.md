@@ -30,7 +30,7 @@ This will prompt for user input and let you play through a game.
 Note, to run the scripts, you will need additional dependencies included in the requirements.py but not in the setup.py.
 
 The package includes an abstract base class for Wordle agents.
-I've included a script showing how to evaluate your own software using word_benchmark!
+I've included a script showing how to evaluate your own software using wordle_benchmark!
 
 `python scripts/sample_agent_definition.py --target_words "[plate, train]"`              
 
