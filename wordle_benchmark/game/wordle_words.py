@@ -4,15 +4,14 @@ Classes to represent Wordle words we want to guess and our guesses.
 
 from abc import ABC
 from enum import Enum, auto
-from typing import List, Tuple
+from typing import TYPE_CHECKING, List, Tuple
 
-from wordle_benchmark.dictionary.wordle_dictionary import Dictionary
+if TYPE_CHECKING:
+    from wordle_benchmark.dictionary.wordle_dictionary import Dictionary
 
 
 class LetterState(Enum):
-    """
-    Enum of possible Wordle letter states.
-    """
+    """ Enum of possible Wordle letter states """
 
     GREEN = auto()
     YELLOW = auto()
@@ -23,9 +22,7 @@ MatchState = Tuple[str, LetterState]
 
 
 class Word(ABC):
-    """
-    Word ABC.
-    """
+    """ Word ABC """
 
     def __init__(self, word: str) -> None:
         """
@@ -47,7 +44,7 @@ class Word(ABC):
     def __str__(self) -> str:
         return self._word
 
-    def in_dictionary(self, dictionary: Dictionary) -> bool:
+    def in_dictionary(self, dictionary: "Dictionary") -> bool:
         """
         Check if a guess is in a dictionary.
 
@@ -75,17 +72,13 @@ class Word(ABC):
 
 
 class TargetWord(Word):  # pylint: disable=too-few-public-methods
-    """
-    Word we are trying to guess.
-    """
+    """ Word we are trying to guess """
 
     ...
 
 
 class GuessWord(Word):
-    """
-    Word we have guessed.
-    """
+    """ Word we have guessed """
 
     def compare_to(self, target_word: TargetWord) -> List[MatchState]:
         """

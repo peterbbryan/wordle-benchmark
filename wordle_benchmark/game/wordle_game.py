@@ -4,15 +4,15 @@ Classes to represent game logic.
 
 import logging
 from enum import Enum, auto
-from typing import Generator, List, Tuple
+from typing import TYPE_CHECKING, Generator, List, Tuple
 
-from wordle_benchmark.dictionary.wordle_dictionary import Dictionary, RemoteDictionary
-from wordle_benchmark.game.wordle_words import (
-    GuessWord,
-    LetterState,
-    MatchState,
-    TargetWord,
-)
+from wordle_benchmark.dictionary.wordle_dictionary import RemoteDictionary
+from wordle_benchmark.game.wordle_words import GuessWord, LetterState, TargetWord
+
+if TYPE_CHECKING:
+
+    from wordle_benchmark.dictionary.wordle_dictionary import Dictionary
+    from wordle_benchmark.game.wordle_words import MatchState
 
 log = logging.getLogger(__name__)
 
@@ -25,9 +25,7 @@ DEFAULT_DICTIONARY = RemoteDictionary(
 
 
 class GameState(Enum):
-    """
-    Enum of possible Wordle game states.
-    """
+    """ Enum of possible Wordle game states """
 
     UNSTARTED = auto()
     STARTED = auto()
@@ -38,35 +36,13 @@ class IllegalGuessError(Exception):
     """ Guess is not the right length or is not a word """
 
 
-class GameManager:  # pylint: disable=too-few-public-methods
-    """
-    Wordle game logic.
-    """
-
-    def __init__(
-        self, dictionary: Dictionary = DEFAULT_DICTIONARY, max_guesses: int = 6
-    ):
-        """
-        Args:
-            dictionary: Wordle dictionary.
-            max_guesses: Max number of guesses.
-        """
-
-        self._dictionary = dictionary
-        self._word_len = dictionary.word_len
-        self._max_guesses = max_guesses
-        self._current_guess_count = 0
-
-
 class Game:  # pylint: disable=too-many-instance-attributes
-    """
-    Logic for game.
-    """
+    """ Logic for game """
 
     def __init__(
         self,
         target_word: str,
-        dictionary: Dictionary = DEFAULT_DICTIONARY,
+        dictionary: "Dictionary" = DEFAULT_DICTIONARY,
         max_guesses: int = 6,
     ):
         """
@@ -80,7 +56,7 @@ class Game:  # pylint: disable=too-many-instance-attributes
         self._dictionary = dictionary
         self._max_guesses = max_guesses
         self._word_len = len(target_word)
-        self._guesses: List[List[MatchState]] = []
+        self._guesses: List[List["MatchState"]] = []
 
         self._greens: List[Tuple[str, int]] = []
         self._yellows: List[Tuple[str, int]] = []
@@ -89,11 +65,20 @@ class Game:  # pylint: disable=too-many-instance-attributes
         self._game_state = GameState.UNSTARTED
 
     @property
+    def last_match(self) -> List["MatchState"]:
+        """ Most recent match. """
+
+        return self._guesses[-1]
+
+    @property
+    def n_guesses(self) -> int:
+        """ Number of guesses so far. """
+
+        return len(self._guesses)
+
+    @property
     def possible_words(self) -> List[str]:
-        """
-        Returns:
-            Words that are still legal based on the dictionary.
-        """
+        """ Words that are still legal based on the dictionary. """
 
         possible_words = []
 
@@ -116,10 +101,16 @@ class Game:  # pylint: disable=too-many-instance-attributes
 
         return possible_words
 
+    @property
+    def success(self) -> bool:
+        """ Whether the most recent guess was correct. """
+
+        return all(
+            letter_state == LetterState.GREEN for _, letter_state in self.last_match
+        )
+
     def _transition_to_started(self):
-        """
-        State machine transition to started.
-        """
+        """ State machine transition to started """
 
         assert self._game_state == GameState.UNSTARTED
 
@@ -127,16 +118,14 @@ class Game:  # pylint: disable=too-many-instance-attributes
         self._game_state = GameState.STARTED
 
     def _transition_to_finished(self):
-        """
-        State machine transition to finished.
-        """
+        """ State machine transition to finished. """
 
         assert self._game_state == GameState.STARTED
 
         log.info("Ending game")
         self._game_state = GameState.FINISHED
 
-    def _handle_match(self, match_state: MatchState, ind: int) -> None:
+    def _handle_match(self, match_state: "MatchState", ind: int) -> None:
         """
         Update knowledge of black, yellow, green letters after guess.
         A match state represents a letter and it's black, yellow, green state.
@@ -163,7 +152,7 @@ class Game:  # pylint: disable=too-many-instance-attributes
         else:
             raise ValueError("Unknown letter state")
 
-    def _register_guess(self, guess_word: GuessWord) -> bool:
+    def _register_guess(self, guess_word: "GuessWord") -> bool:
         """
         Register guess and update game state if necessary.
 
@@ -182,14 +171,14 @@ class Game:  # pylint: disable=too-many-instance-attributes
             raise IllegalGuessError(f"{guess_word} is not in the dictionary")
 
         # black, yellow, green match outcome given guess
-        comparison: List[MatchState] = guess_word.compare_to(self._target_word)
+        comparison: List["MatchState"] = guess_word.compare_to(self._target_word)
         self._guesses.append(comparison)
 
         for ind, match in enumerate(comparison):
             self._handle_match(match, ind)
 
         # if all characters matched, that's the end of the game
-        return all(letter_state == LetterState.GREEN for _, letter_state in comparison)
+        return self.success
 
     def start_game(self) -> Generator[None, str, None]:
         """

@@ -12,9 +12,7 @@ import requests
 
 
 class Dictionary(ABC):
-    """
-    Dictionary ABC.
-    """
+    """ Dictionary ABC """
 
     def __init__(
         self, word_list: List[str], word_len: int, seed: Optional[int] = None
@@ -87,27 +85,21 @@ class Dictionary(ABC):
 
 
 class CustomDictionary(Dictionary):  # pylint: disable=too-few-public-methods
-    """
-    CustomDictionary from lists.
-    """
+    """ CustomDictionary from lists """
 
     def __init__(self) -> None:  # pylint: disable=super-init-not-called
         raise NotImplementedError
 
 
 class LocalDictionary(Dictionary):  # pylint: disable=too-few-public-methods
-    """
-    LocalDictionary from local file.
-    """
+    """ LocalDictionary from local file """
 
     def __init__(self) -> None:  # pylint: disable=super-init-not-called
         raise NotImplementedError
 
 
 class RemoteDictionary(Dictionary):  # pylint: disable=too-few-public-methods
-    """
-    RemoteDictionary from remote source.
-    """
+    """ RemoteDictionary from remote source """
 
     def __init__(
         self, remote_source: str, word_len: int, seed: Optional[int] = None
