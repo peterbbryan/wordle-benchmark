@@ -6,7 +6,9 @@ Call "pip install -e ." for local development, see also requirements.txt
 import pathlib
 import setuptools
 
-README = (pathlib.Path(__file__).parent / "README.md").read_text()
+README = (
+    pathlib.Path(__file__).parent / "README.md"  # pylint: disable=unspecified-encoding
+).read_text()
 
 setuptools.setup(
     name="wordle-benchmark",
@@ -19,6 +21,5 @@ setuptools.setup(
     author_email="peterbbryan@gmail.com",
     license="MIT",
     packages=setuptools.find_packages(),
-    include_package_data=True,
     install_requires=["numpy", "requests"],
 )

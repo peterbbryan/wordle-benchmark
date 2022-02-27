@@ -9,7 +9,7 @@ import fire
 import wordfreq
 
 from wordle_benchmark.agent import Agent
-from wordle_benchmark.benchmark import Benchmark
+from wordle_benchmark.benchmarker import Benchmark
 
 if TYPE_CHECKING:
     from wordle_benchmark.game import Game

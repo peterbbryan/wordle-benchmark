@@ -4,7 +4,7 @@ Classes to represent game logic.
 
 import logging
 from enum import Enum, auto
-from typing import TYPE_CHECKING, Generator, List, Tuple
+from typing import TYPE_CHECKING, Generator, List, Optional, Tuple
 
 from wordle_benchmark.dictionary.wordle_dictionary import RemoteDictionary
 from wordle_benchmark.game.wordle_words import GuessWord, LetterState, TargetWord
@@ -65,8 +65,11 @@ class Game:  # pylint: disable=too-many-instance-attributes
         self._game_state = GameState.UNSTARTED
 
     @property
-    def last_match(self) -> List["MatchState"]:
+    def last_match(self) -> Optional[List["MatchState"]]:
         """ Most recent match. """
+
+        if len(self._guesses) == 0:
+            return None
 
         return self._guesses[-1]
 
@@ -105,9 +108,12 @@ class Game:  # pylint: disable=too-many-instance-attributes
     def success(self) -> bool:
         """ Whether the most recent guess was correct. """
 
-        return all(
-            letter_state == LetterState.GREEN for _, letter_state in self.last_match
-        )
+        last_match = self.last_match
+
+        if last_match is None:
+            return False
+
+        return all(letter_state == LetterState.GREEN for _, letter_state in last_match)
 
     def _transition_to_started(self):
         """ State machine transition to started """
